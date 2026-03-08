@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button, Input } from '../../components/ui';
 
@@ -16,7 +16,16 @@ export function Register() {
   });
   const [errors, setErrors] = useState({});
   const [done, setDone] = useState(false);
-  const { register, loginWithGoogle, loading, error, setError } = useAuth();
+  const { register, loginWithGoogle, loading, error, setError, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
   
   const set = (k) => (e) => {
     if (setError) setError(null);

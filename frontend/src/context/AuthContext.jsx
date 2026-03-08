@@ -12,6 +12,14 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
+// Helper to prevent Firestore from hanging forever if not initialized in console
+const withTimeout = (promise, ms = 4000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('firestore-timeout')), ms))
+  ]);
+};
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -25,7 +33,7 @@ export function AuthProvider({ children }) {
       if (firebaseUser) {
         try {
           const docRef = doc(db, 'users', firebaseUser.uid);
-          const docSnap = await getDoc(docRef);
+          const docSnap = await withTimeout(getDoc(docRef));
           
           if (docSnap.exists()) {
             const profileData = docSnap.data();
@@ -46,8 +54,15 @@ export function AuthProvider({ children }) {
             });
           }
         } catch (err) {
-          console.error("Error fetching user profile:", err);
-          setUser(null);
+          console.warn("Firestore profile fetch delayed/failed. Resolving with safe fallback. Ensure Firestore is enabled in Firebase Console.", err);
+          // Safe fallback so the user can still log in and use the app
+          setUser({
+            uid: firebaseUser.uid,
+            id: firebaseUser.uid,
+            email: firebaseUser.email,
+            name: firebaseUser.displayName || 'User',
+            role: 'resident',
+          });
         }
       } else {
         setUser(null);
@@ -82,9 +97,9 @@ export function AuthProvider({ children }) {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
 
-      // Check if user document exists in Firestore
+      // Check if user document exists in Firestore (with timeout)
       const docRef = doc(db, 'users', firebaseUser.uid);
-      const docSnap = await getDoc(docRef);
+      const docSnap = await withTimeout(getDoc(docRef));
 
       if (!docSnap.exists()) {
         // Create it if it doesn't exist (first-time login via Google)
@@ -97,13 +112,17 @@ export function AuthProvider({ children }) {
           provider: 'google',
           createdAt: new Date().toISOString()
         };
-        await setDoc(docRef, userRecord);
+        await withTimeout(setDoc(docRef, userRecord));
       }
       
       // State updated via onAuthStateChanged
       return true;
     } catch (err) {
-      setError(mapAuthError(err.code));
+      if (err.message === 'firestore-timeout') {
+         setError('Firestore database is not initialized. Please enable it in Firebase Console.');
+      } else {
+         setError(mapAuthError(err.code));
+      }
       setLoading(false);
       return false;
     }
@@ -132,11 +151,15 @@ export function AuthProvider({ children }) {
         createdAt: new Date().toISOString()
       };
       
-      await setDoc(doc(db, 'users', firebaseUser.uid), userRecord);
+      await withTimeout(setDoc(doc(db, 'users', firebaseUser.uid), userRecord));
       
       return true;
     } catch (err) {
-      setError(mapAuthError(err.code));
+      if (err.message === 'firestore-timeout') {
+         setError('Firestore database is not initialized. Please enable it in Firebase Console.');
+      } else {
+         setError(mapAuthError(err.code));
+      }
       setLoading(false);
       return false;
     }
