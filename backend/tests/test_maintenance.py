@@ -1,0 +1,8 @@
+import pytest
+
+@pytest.mark.asyncio
+async def test_maintenance_dummy(client):
+    """
+    Placeholder test for Maintenance
+    """
+    assert True

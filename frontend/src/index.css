@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background-color: #0C0F1A; color: #E2E8F0; -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4,h5,h6 { font-family: 'Syne', sans-serif; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #131726; }
+::-webkit-scrollbar-thumb { background: #252A42; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #6EE7B7; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.animate-fade-in { animation: fadeIn 0.35s ease both; }
+.animate-slide-in { animation: slideIn 0.3s ease both; }
+
+.stagger-children > * { animation: fadeIn 0.35s ease both; }
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+.skeleton { background: linear-gradient(90deg, #1A1F35 25%, #252A42 50%, #1A1F35 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+
+*:focus-visible { outline: 2px solid #6EE7B7; outline-offset: 2px; border-radius: 4px; }
+.modal-backdrop { backdrop-filter: blur(6px); background: rgba(12,15,26,0.8); }
+
+.nav-active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:60%; background:#6EE7B7; border-radius:0 2px 2px 0; }
+
+.data-table th { font-family:'Syne',sans-serif; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; }
+.data-table tr:hover td { background:rgba(37,42,66,0.5); }
